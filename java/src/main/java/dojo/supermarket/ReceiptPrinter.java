@@ -18,29 +18,45 @@ public class ReceiptPrinter {
 
     public String printReceipt(Receipt receipt) {
         StringBuilder result = new StringBuilder();
+        result.append(getAllReceiptItems(receipt));
+        result.append(getAllDiscounts(receipt));
+        result.append("\n");
+        result.append(presentTotal(receipt));
+
+        return result.toString();
+    }
+
+    private StringBuilder getAllReceiptItems(Receipt receipt) {
+        StringBuilder result = new StringBuilder();
+
         for (ReceiptItem item : receipt.getItems()) {
             String receiptItem = presentReceiptItem(item);
             result.append(receiptItem);
         }
+
+        return result;
+    }
+
+    private StringBuilder getAllDiscounts(Receipt receipt) {
+        StringBuilder result = new StringBuilder();
+
         for (Discount discount : receipt.getDiscounts()) {
             String discountPresentation = presentDiscount(discount);
             result.append(discountPresentation);
         }
 
-        result.append("\n");
-        result.append(presentTotal(receipt));
-        return result.toString();
+        return result;
     }
 
     private String presentReceiptItem(ReceiptItem item) {
         String totalPricePresentation = presentPrice(item.getTotalPrice());
         String name = item.getProduct().getName();
-
         String line = formatLineWithWhitespace(name, totalPricePresentation);
 
         if (item.getQuantity() != 1) {
             line += "  " + presentPrice(item.getPrice()) + " * " + presentQuantity(item) + "\n";
         }
+
         return line;
     }
 
@@ -58,15 +74,21 @@ public class ReceiptPrinter {
     }
 
     private String formatLineWithWhitespace(String name, String value) {
-        StringBuilder line = new StringBuilder();
-        line.append(name);
+        StringBuilder line = new StringBuilder(name);
         int whitespaceSize = this.columns - name.length() - value.length();
-        for (int i = 0; i < whitespaceSize; i++) {
-            line.append(" ");
-        }
+
+        line.append(padSpace(whitespaceSize));
         line.append(value);
         line.append('\n');
         return line.toString();
+    }
+
+    private StringBuilder padSpace(Integer spaceLength) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < spaceLength; i++) {
+            result.append(" ");
+        }
+        return result;
     }
 
     private static String presentPrice(double price) {
@@ -74,9 +96,8 @@ public class ReceiptPrinter {
     }
 
     private static String presentQuantity(ReceiptItem item) {
-        return ProductUnit.Each.equals(item.getProduct().getUnit())
+            return ProductUnit.Each.equals(item.getProduct().getUnit())
                 ? String.format("%x", (int)item.getQuantity())
                 : String.format(Locale.UK, "%.3f", item.getQuantity());
     }
-
 }

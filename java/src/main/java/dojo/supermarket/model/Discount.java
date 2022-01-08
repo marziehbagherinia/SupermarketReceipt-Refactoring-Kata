@@ -22,5 +22,4 @@ public class Discount {
     public Product getProduct() {
         return product;
     }
-
 }
